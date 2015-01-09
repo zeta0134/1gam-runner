@@ -4,30 +4,58 @@
 #include "multipass_engine.h"
 #include "drawable_entity.h"
 #include "ai/ship.h"
+#include "ai/obstacle.h"
 #include <list>
 
-using ship_ai::ShipState;
+#include "debug.h"
 
 class Game {
-  public:
-    Game(MultipassEngine& engine);
-    ~Game();
+ public:
+  Game(MultipassEngine& engine);
+  ~Game();
 
-    template <typename StateType> 
-    StateType* SpawnObject();
+  template <typename StateType> 
+  StateType* SpawnObject();
 
-    template <typename StateType>
-    void RemoveObject(StateType* object);
+  template <typename StateType> 
+  void RemoveObject(StateType* object);
 
-    void Step();
+  void Step();
 
-  private:
-    const u32 kMaxEntities = 100;
-    std::list<DrawableEntity*> entities_;
-    std::list<ShipState*> ships_;
+ private:
+  const u32 kMaxEntities = 100;
+  std::list<DrawableEntity*> entities_;
 
-    DrawableEntity* allocate_entity();
-    MultipassEngine& engine;
+  std::list<ship_ai::ShipState*> ships_;
+  std::list<obstacle_ai::ObstacleState*> obstacles_;
+
+  DrawableEntity* allocate_entity();
+  MultipassEngine& engine;
+
+  template <typename StateType>
+  void CleanupObject(StateType* object) {
+    engine.RemoveEntity(object->entity);
+    debug::nocashNumber(1);
+    entities_.remove(object->entity);
+    debug::nocashNumber(2);
+    delete object->entity;
+    debug::nocashNumber(3);
+    delete object;
+    debug::nocashNumber(4);
+  }
+
+  template <typename StateType>
+  StateType* InitObject() {
+    StateType* state = new StateType();
+    state->entity = allocate_entity();
+    state->game = this;
+    const bool too_many_objects = state->entity == nullptr;
+    if (too_many_objects) {
+      delete state;
+      return nullptr;
+    }
+    return state;
+  }
 };
 
 #endif  // GAME_H

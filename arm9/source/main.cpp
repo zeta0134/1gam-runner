@@ -11,12 +11,14 @@
 #include "vram_allocator.h"
 
 #include "ai/ship.h"
+#include "ai/obstacle.h"
 
 #include "game.h"
 
 // Included to debug texture loading.
 
 using ship_ai::ShipState;
+using obstacle_ai::ObstacleState;
 
 using numeric_types::literals::operator"" _f;
 using numeric_types::literals::operator"" _brad;
@@ -80,9 +82,10 @@ void LoadTextures() {
   vramSetBankC(VRAM_C_TEXTURE);
 }
 
+ShipState* g_ship_state;
 void InitShip() {
-  ShipState* state = game.SpawnObject<ShipState>();
-  g_engine.TargetEntity(state->entity);
+  g_ship_state = game.SpawnObject<ShipState>();
+  g_engine.TargetEntity(g_ship_state->entity);
 }
 
 void Init() {
@@ -99,8 +102,28 @@ void Init() {
   glPushMatrix();
 }
 
+void GenerateObstacle(ShipState* ship) {
+  static int delay_counter = 0;
+  delay_counter++;
+  if (delay_counter > 5) {
+    delay_counter = 0;
+    //based on the ship's current position, spawn in an obstacle
+    ObstacleState* obstacle = game.SpawnObject<ObstacleState>();
+    auto body = obstacle->entity->body();
+    body->position = ship->entity->body()->position;
+
+    //let's be 100 units ahead of the ship
+    body->position.z += 100_f;
+
+    //let's be a random offset from the ship's position
+    body->position.x += fixed::FromInt((rand() % 30) - 15);
+    body->position.y += fixed::FromInt((rand() % 30) - 15);
+  }
+}
+
 void RunLogic() {
   //TODO: Make this more powerful, handle spawning objects and levels and stuff
+  GenerateObstacle(g_ship_state);
   game.Step();
 }
 

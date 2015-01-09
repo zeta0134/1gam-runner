@@ -8,6 +8,12 @@
 
 namespace nt = numeric_types;
 
+DrawableEntity::~DrawableEntity() {
+  if (body_) {
+    engine()->World().FreeBody(body_);
+  }
+}
+
 DrawableEntity::DrawableEntity() {
   //zero out the cached matrix to initialize it
   for (int i = 1; i < 13; i++) {

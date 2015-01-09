@@ -4,6 +4,8 @@
 #include <functional>
 #include "drawable_entity.h"
 
+class Game;
+
 template<typename T>
 using GuardFunction = std::function<bool(T const&)>;
 template<typename T>
@@ -11,9 +13,11 @@ using ActionFunction = std::function<void(T &)>;
 
 struct ObjectState {
   DrawableEntity* entity = nullptr;
+  Game* game = nullptr;
   int current_node = 0;
   int frames_alive = 0;
   int frames_at_this_node = 0;
+  bool dead = false;
 };
 
 enum Trigger {

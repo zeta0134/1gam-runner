@@ -7,6 +7,8 @@
 // Model data
 #include "really_bad_ship_dsgx.h"
 
+#include "debug.h"
+
 using numeric_types::literals::operator"" _f;
 using numeric_types::fixed;
 
@@ -23,13 +25,18 @@ void InitAlways(ShipState& ship) {
 
   //setup physics parameters for collision
   auto body = ship.entity->body();
-  body->height = 6_f;
+  body->height = 0.5_f;
   body->radius = 1.5_f;
 
   body->collides_with_bodies = 1;
+  body->collides_with_sensors = 1;
+  body->is_movable = 1;
 
   //initialize our walking angle?
   ship.current_angle = 270_brad;
+
+  //initialize our position to 0,0,0
+  body->position = Vec3{0_f, 0_f, 0_f};
 }
 
 bool DpadActive(const ShipState& ship) {
@@ -64,17 +71,24 @@ void MoveShip(ShipState& ship) {
   ship.entity->body()->velocity.z = kShipForwardSpeed;
 }
 
+bool CollidedWithAnything(const ShipState& ship) {
+  return ship.entity->body()->sensor_result != 0;
+}
+
 Edge<ShipState> edge_list[] {
   Edge<ShipState>{kAlways, nullptr, InitAlways, 1}, //Init -> Idle
   {kAlways,DpadActive,MoveShip,2},  // Idle -> Run
+  {kAlways,CollidedWithAnything,nullptr,0},  // Idle -> Dead (init for now)
   {kAlways,DpadInactive,ReturnToIdle,1},  // Run -> Idle
   {kAlways,nullptr,MoveShip,2},  // Run -> Run (loopback, handles movement)
+  {kAlways,CollidedWithAnything,nullptr,0},  // Run -> Dead (init for now)
+
 };
 
 Node node_list[] {
   {"Init", true, 0, 0},
-  {"Idle", true, 1, 1},
-  {"Run", true, 2, 3},
+  {"Idle", true, 1, 2},
+  {"Run", true, 3, 5},
 };
 
 StateMachine<ShipState> machine(node_list, edge_list);

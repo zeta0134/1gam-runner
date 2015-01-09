@@ -217,12 +217,14 @@ void World::DebugCircles() {
       color = RGB5(31,31,0); //yellow for sensors
     }
     debug::DrawCircle(body.position, body.radius, color, segments);
+    debug::DrawCircle(body.position + Vec3{0_f, body.height, 0_f}, body.radius, color, segments);
   }
   for (int i = 0; i < active_pikmin_; i++) {
     Body& body = bodies_[pikmin_[i]];
     //pick a color based on the state of this body
     rgb color = RGB5(31,15,15);
     int segments = 6;
-    debug::DrawCircle(body.position, body.radius, color, segments); 
+    debug::DrawCircle(body.position, body.radius, color, segments);
+    debug::DrawCircle(body.position + Vec3{0_f, body.height, 0_f}, body.radius, color, segments);
   }
 }

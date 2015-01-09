@@ -73,8 +73,8 @@ Edge<ShipState> edge_list[] {
 
 Node node_list[] {
   {"Init", true, 0, 0},
-  {"Idle", true, 1, 1, "Armature|Idle1", 30},
-  {"Run", true, 2, 3, "Armature|Run", 60},
+  {"Idle", true, 1, 1},
+  {"Run", true, 2, 3},
 };
 
 StateMachine<ShipState> machine(node_list, edge_list);

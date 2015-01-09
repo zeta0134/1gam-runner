@@ -12,6 +12,8 @@
 
 #include "ai/ship.h"
 
+#include "game.h"
+
 // Included to debug texture loading.
 
 using ship_ai::ShipState;
@@ -25,8 +27,9 @@ s32 const kTestPikmin{100};
 MultipassEngine g_engine;
 VramAllocator texture_allocator(VRAM_C, 128 * 1024);
 
-DrawableEntity g_ship;
-ShipState g_ship_state;
+//DrawableEntity g_ship;
+//ShipState g_ship_state;
+Game game(g_engine);
 
 // Initialize the console using the full version of the console init function so
 // that VRAM bank H can be used instead of the default bank, bank C.
@@ -77,10 +80,9 @@ void LoadTextures() {
   vramSetBankC(VRAM_C_TEXTURE);
 }
 
-void InitCaptain() {
-  g_ship_state.entity = &g_ship;
-  g_engine.AddEntity(&g_ship);
-  g_engine.TargetEntity(&g_ship);
+void InitShip() {
+  ShipState* state = game.SpawnObject<ShipState>();
+  g_engine.TargetEntity(state->entity);
 }
 
 void Init() {
@@ -91,7 +93,7 @@ void Init() {
   InitMainScreen();
 
   LoadTextures();
-  InitCaptain();
+  InitShip();
   
 
   glPushMatrix();
@@ -99,7 +101,7 @@ void Init() {
 
 void RunLogic() {
   //TODO: Make this more powerful, handle spawning objects and levels and stuff
-  ship_ai::machine.RunLogic(g_ship_state);
+  game.Step();
 }
 
 void GameLoop() {

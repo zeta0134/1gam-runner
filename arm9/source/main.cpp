@@ -105,7 +105,7 @@ void Init() {
 void GenerateObstacle(ShipState* ship) {
   static int delay_counter = 0;
   delay_counter++;
-  if (delay_counter > 5) {
+  if (delay_counter > 2) {
     delay_counter = 0;
     //based on the ship's current position, spawn in an obstacle
     ObstacleState* obstacle = game.SpawnObject<ObstacleState>();
@@ -116,8 +116,8 @@ void GenerateObstacle(ShipState* ship) {
     body->position.z += 100_f;
 
     //let's be a random offset from the ship's position
-    body->position.x += fixed::FromInt((rand() % 30) - 15);
-    body->position.y += fixed::FromInt((rand() % 30) - 15);
+    body->position.x += fixed::FromInt((rand() % 50) - 25);
+    body->position.y += fixed::FromInt((rand() % 50) - 25);
   }
 }
 

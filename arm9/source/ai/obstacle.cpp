@@ -26,11 +26,12 @@ void InitAlways(ObstacleState& obstacle) {
 
   //setup physics parameters for collision
   auto body = obstacle.entity->body();
-  body->height = 1_f;
-  body->radius = 1_f;
+  body->height = 3_f;
+  body->radius = 3_f;
 
   body->collides_with_bodies = 1;
   body->is_sensor = 1;
+  body->is_pikmin = 1;
 }
 
 void DeleteSelf(ObstacleState& obstacle) {
@@ -38,7 +39,7 @@ void DeleteSelf(ObstacleState& obstacle) {
 }
 
 bool AliveFor150Frames(const ObstacleState& obstacle) {
-  return obstacle.frames_alive > 150;
+  return obstacle.frames_alive > 220;
 }
 
 Edge<ObstacleState> edge_list[] {

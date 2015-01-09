@@ -192,6 +192,9 @@ void World::ProcessCollision() {
         if (A.is_sensor) {
           P.sensor_result = &A;
         }
+        if (P.is_sensor) {
+          A.sensor_result = &P;
+        }
       }
     }
   }

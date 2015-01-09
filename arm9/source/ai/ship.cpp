@@ -50,7 +50,7 @@ bool DpadInactive(const ShipState& ship) {
   return !DpadActive(ship);
 }
 
-const fixed kShipForwardSpeed = 1_f;
+const fixed kShipForwardSpeed = 0.5_f;
 const fixed kShipStrafeSpeed = 0.2_f;
 
 void ReturnToIdle(ShipState& ship) {

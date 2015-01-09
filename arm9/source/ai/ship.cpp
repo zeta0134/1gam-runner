@@ -8,6 +8,7 @@
 #include "really_bad_ship_dsgx.h"
 
 using numeric_types::literals::operator"" _f;
+using numeric_types::fixed;
 
 using numeric_types::literals::operator"" _brad;
 using numeric_types::Brads;
@@ -42,41 +43,25 @@ bool DpadInactive(const ShipState& ship) {
   return !DpadActive(ship);
 }
 
+const fixed kShipForwardSpeed = 1_f;
+const fixed kShipStrafeSpeed = 0.2_f;
+
 void ReturnToIdle(ShipState& ship) {
   //reset velocity to 0, so we stop moving
-  ship.entity->body()->velocity = {0_f,0_f,0_f};
+  ship.entity->body()->velocity = {0_f,0_f,kShipForwardSpeed};
 }
 
 void MoveShip(ShipState& ship) {
   auto engine = ship.entity->engine();
-  Brads dpad_angle = engine->CameraAngle() + engine->DPadDirection() - 90_brad;
-  Brads delta = dpad_angle - ship.current_angle;
+  Brads dpad_angle = engine->DPadDirection();
 
-  // Translate delta to be in +/-180 degrees
-  // Todo(Cristian) This may not be necessary anymore due to the use of Brads.
-  while (delta >= 180_brad) {
-    delta -= 360_brad;
-  }
-  while (delta < -180_brad) {
-    delta += 360_brad;
-  }
-
-  //Now clamp delta, so that we achieve smooth turning angles
-  if (delta > 11_brad) {
-    delta = 11_brad;
-  }
-  if (delta < -11_brad) {
-    delta = -11_brad;
-  }
-
-  ship.current_angle += delta;
   ship.entity->set_rotation(0_brad, ship.current_angle + 90_brad, 0_brad);
 
   // Apply velocity in the direction of the current angle.
-  ship.entity->body()->velocity.x.data_ = cosLerp(ship.current_angle.data_);
-  ship.entity->body()->velocity.y = 0_f;
-  ship.entity->body()->velocity.z.data_ = -sinLerp(ship.current_angle.data_);
-  ship.entity->body()->velocity *= 0.2_f;
+  ship.entity->body()->velocity.x.data_ = -cosLerp(dpad_angle.data_);
+  ship.entity->body()->velocity.y.data_ = sinLerp(dpad_angle.data_);
+  ship.entity->body()->velocity *= kShipStrafeSpeed;
+  ship.entity->body()->velocity.z = kShipForwardSpeed;
 }
 
 Edge<ShipState> edge_list[] {

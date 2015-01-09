@@ -24,56 +24,25 @@ Camera::Camera() {
 }
 
 void Camera::Update() {
-  if (keysDown() & KEY_R) {
-    if (keysHeld() & KEY_L) {
-      distance_ += 1;
-      if (distance_ > 3) {
-        distance_ = 1;
-      }
-    } else {
-      high_camera_ = not high_camera_;
-    }
-  }
-
+  fixed const kFollowDistance = 10_f;
   if (entity_to_follow_) {
-    fixed const height = (high_camera_ ? 7.5_f : 2.5_f) *
-        fixed::FromInt(distance_ + 1);
-
-    if (keysDown() & KEY_L) {
-      // Move the camera directly behind the target entity, based on their
-      // current rotation.
-      position_destination_ = entity_to_follow_->position();
-      position_destination_.x.data_ -=
-          cosLerp((entity_to_follow_->rotation().y - 90_brad).data_);
-      position_destination_.z.data_ -=
-          -sinLerp((entity_to_follow_->rotation().y - 90_brad).data_);
-    }
-
-    fixed follow_distance = 4.0_f + 6.0_f * fixed::FromInt(distance_);
-
+    Vec3 offset = {0_f, 2_f, 0_f};
+    position_destination_ = entity_to_follow_->position() + offset;
+    position_destination_.z = 0_f;
     target_destination_ = entity_to_follow_->position();
-    Vec3 entity_to_camera = entity_to_follow_->position() -
-        position_destination_;
-    entity_to_camera.y = 0_f;  // Clear out height to work in the XZ plane.
-    entity_to_camera = entity_to_camera.Normalize();
-    entity_to_camera = entity_to_camera * follow_distance;
-    position_destination_ = entity_to_follow_->position() - entity_to_camera;
-    position_destination_.y = height;
-
-    printf("\x1b[8;0HC. Position: %.1f, %.1f, %.1f\n",
-        (float)position_destination_.x, (float)position_destination_.y,
-        (float)position_destination_.z);
-    printf("C. Target  : %.1f, %.1f, %.1f\n", (float)target_destination_.x,
-        (float)target_destination_.y, (float)target_destination_.z);
   } else {
     printf("No entity?\n");
   }
 
   // Take the weighted average for position and target to take a smooth
   // transition between the old value and the new one.
-  position_current_ = position_destination_ * 0.25_f + position_current_ *
-      0.75_f;
-  target_current_ = target_destination_ * 0.25_f + target_current_ * 0.75_f;
+  const fixed chase_weight = 0.25_f;
+  position_current_.z = 0_f;
+  position_current_ = position_destination_ * chase_weight + position_current_ *
+      (1_f - chase_weight);
+  position_current_.z = entity_to_follow_->position().z - kFollowDistance;
+  target_current_ = target_destination_ * chase_weight + target_current_ * 
+      (1_f - chase_weight);
 }
 
 void Camera::LookAt(Vec3 position, Vec3 target, bool instant) {
